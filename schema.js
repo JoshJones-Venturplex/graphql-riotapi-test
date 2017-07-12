@@ -10,8 +10,6 @@ const dotenv = require('dotenv').config();
 const { makeExecutableSchema } = require('graphql-tools');
 const key = process.env.LOL_KEY;
 
-let summonerId;
-
 const getSummonerByName = (name) => {
   return rp({
     uri: `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=${key}`,
@@ -19,19 +17,7 @@ const getSummonerByName = (name) => {
   });
 }
 
-const getSummonerId = (name) => {
-  return rp({
-    uri: `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=${key}`,
-    resolveWithFullResponse: true,
-    json: true
-  }).then((response) => {
-    summonerId = response.body.id;
-  });
-}
-
-const getSummonerRank = (name) => {
-  getSummonerId(name);
-  console.log(name);
+const getSummonerRank = (summonerId) => {
   return rp({
     uri: `https://na1.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerId}?api_key=${key}`,
     transform: (body, response, resolveWithFullResponse) => { return body[0] },
@@ -78,7 +64,7 @@ const resolverMap = {
   },
   Summoner: {
     rank(root, args, context) {
-      return getSummonerRank(root.name);
+      return getSummonerRank(root.id);
     }
   }
 }
